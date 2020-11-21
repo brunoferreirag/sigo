@@ -1,0 +1,66 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:tns="http://indtextbr.com.br/services/gestaoprocessosindustriais/entity"
+	targetNamespace="http://indtextbr.com.br/services/gestaoprocessosindustriais/entity"
+	elementFormDefault="qualified">
+
+	<xs:element name="getProblemaProducaoRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="turno" type="xs:string" />
+				<xs:element name="dataInicio" type="xs:string" />
+				<xs:element name="dataFim" type="xs:string" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="getProblemaProducaoResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="unbounded" minOccurs="0"
+					name="lista" nillable="true" type="tns:problemaProducao" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="problemaProducao">
+		<xs:sequence>
+			<xs:element name="codigoLinha" type="xs:string" />
+			<xs:element name="turno" type="xs:string" />
+			<xs:element name="causa" type="xs:string" />
+			<xs:element name="dataInicio" type="xs:string" />
+			<xs:element name="dataFim" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+
+	<xs:element name="getParadaProducaoRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="turno" type="xs:string" />
+				<xs:element name="dataInicio" type="xs:string" />
+				<xs:element name="dataFim" type="xs:string" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="paradaProducao">
+		<xs:sequence>
+			<xs:element name="codigoLinha" type="xs:string" />
+			<xs:element name="turno" type="xs:string" />
+			<xs:element name="causa" type="xs:string" />
+			<xs:element name="percentualParado" type="xs:decimal" />
+			<xs:element name="dataInicio" type="xs:string" />
+			<xs:element name="dataFim" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="getParadaProducaoResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="lista" maxOccurs="unbounded" minOccurs="0"
+					 nillable="true" type="tns:paradaProducao" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+</xs:schema>
