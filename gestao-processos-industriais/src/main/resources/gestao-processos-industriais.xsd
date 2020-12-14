@@ -3,64 +3,108 @@
 	targetNamespace="http://indtextbr.com.br/services/gestaoprocessosindustriais/entity"
 	elementFormDefault="qualified">
 
-	<xs:element name="getProblemaProducaoRequest">
+	<xs:element name="getSetorIndustrialRequest">
+		<xs:complexType>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="getSetorIndustrialByIdRequest">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="turno" type="xs:string" />
-				<xs:element name="dataInicio" type="xs:string" />
-				<xs:element name="dataFim" type="xs:string" />
+				<xs:element name="id" type="xs:int" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 
-	<xs:element name="getProblemaProducaoResponse">
+	<xs:element name="getSetorIndustrialResponse">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element maxOccurs="unbounded" minOccurs="0"
-					name="lista" nillable="true" type="tns:problemaProducao" />
+				<xs:element name="lista" maxOccurs="unbounded"
+					minOccurs="0" nillable="true" type="tns:setorIndustrial" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 
-	<xs:complexType name="problemaProducao">
+	<xs:element name="insertSetorIndustrialRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="setorIndustrial"
+					type="tns:setorIndustrial" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="SetorIndustrialResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="setorIndustrial"
+					type="tns:setorIndustrial" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+
+	<xs:element name="updateSetorIndustrialRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="setorIndustrial"
+					type="tns:setorIndustrial" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="updateSetorIndustrialResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="mensagem" type="xs:string" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="insertSetorIndustrialResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="mensagem" type="xs:string" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="deleteSetorIndustrialRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="id" type="xs:int" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="deleteSetorIndustrialResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="mensagem" type="xs:string" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="setorIndustrial">
 		<xs:sequence>
-			<xs:element name="codigoLinha" type="xs:string" />
-			<xs:element name="turno" type="xs:string" />
-			<xs:element name="causa" type="xs:string" />
-			<xs:element name="dataInicio" type="xs:string" />
-			<xs:element name="dataFim" type="xs:string" />
+			<xs:element name="id" type="xs:int" />
+			<xs:element name="nome" type="xs:string" />
+			<xs:element name="listaAtividades" maxOccurs="unbounded"
+				minOccurs="0" nillable="true" type="tns:atividadeIndustrial" />
 		</xs:sequence>
 	</xs:complexType>
 
-
-	<xs:element name="getParadaProducaoRequest">
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element name="turno" type="xs:string" />
-				<xs:element name="dataInicio" type="xs:string" />
-				<xs:element name="dataFim" type="xs:string" />
-			</xs:sequence>
-		</xs:complexType>
-	</xs:element>
-
-	<xs:complexType name="paradaProducao">
+	<xs:complexType name="atividadeIndustrial">
 		<xs:sequence>
-			<xs:element name="codigoLinha" type="xs:string" />
-			<xs:element name="turno" type="xs:string" />
-			<xs:element name="causa" type="xs:string" />
-			<xs:element name="percentualParado" type="xs:decimal" />
-			<xs:element name="dataInicio" type="xs:string" />
-			<xs:element name="dataFim" type="xs:string" />
+			<xs:element name="codigoSetorIndustrial" type="xs:int" />
+			<xs:element name="id" type="xs:int" />
+			<xs:element name="nome" type="xs:string" />
+			<xs:element name="executaSegunda" type="xs:string" />
+			<xs:element name="executaTerca" type="xs:string" />
+			<xs:element name="executaQuarta" type="xs:string" />
+			<xs:element name="executaQuinta" type="xs:string" />
+			<xs:element name="executaSexta" type="xs:string" />
+			<xs:element name="executaSabado" type="xs:string" />
+			<xs:element name="executaDomingo" type="xs:string" />
 		</xs:sequence>
 	</xs:complexType>
-
-	<xs:element name="getParadaProducaoResponse">
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element name="lista" maxOccurs="unbounded" minOccurs="0"
-					 nillable="true" type="tns:paradaProducao" />
-			</xs:sequence>
-		</xs:complexType>
-	</xs:element>
-
 </xs:schema>
