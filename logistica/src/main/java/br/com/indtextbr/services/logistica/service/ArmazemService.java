@@ -43,14 +43,13 @@ public class ArmazemService {
 		
 		ArmazemDTO armazemDTO = this.mapper.readValue(payload, ArmazemDTO.class);
 		Optional<Armazem> armazemOptional = this.armazemRepository.findById(armazemDTO.getId());
-		throw new Exception ("Erro ao editar");
-		/*
+		
 		if(armazemOptional.isPresent()) {
 			Armazem armazem = armazemOptional.get();
 			preencherArmazemEntityDeUmArmazemDTO(armazemDTO, armazem);
 			this.armazemRepository.saveAndFlush(armazem);
 		}
-		*/
+		
 		
 	}
 	
