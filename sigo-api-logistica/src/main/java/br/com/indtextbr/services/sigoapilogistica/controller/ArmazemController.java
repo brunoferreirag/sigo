@@ -41,7 +41,7 @@ public class ArmazemController {
 	}
 	
 	@GetMapping(value="/{id}", produces = { "application/json" })
-	public ResponseEntity<Armazem> getArmazemById(@PathVariable(value="/{id}") String id) throws JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException {
+	public ResponseEntity<Armazem> getArmazemById(@PathVariable(value="id") String id) throws JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException {
 		var armazem = this.armazemService.getArmazemById(id);
 		return new ResponseEntity<>(armazem, (armazem == null) ? HttpStatus.NOT_FOUND : HttpStatus.OK);
 	}
@@ -53,9 +53,9 @@ public class ArmazemController {
 	}
 	
 	@PutMapping(value="/{id}",produces = { "application/json" })
-	public ResponseEntity<Void> atualizarAmazem(@PathVariable(value="{id}") String id, @RequestBody @Valid Armazem armazem) throws JsonProcessingException{
+	public ResponseEntity<Void> atualizarAmazem(@PathVariable(value="id") String id, @RequestBody @Valid Armazem armazem) throws JsonProcessingException{
 		armazem.setId(id);
-		this.armazemService.incluirArmazem(armazem);
+		this.armazemService.editarArmazem(armazem);
 		return ResponseEntity.accepted().build();
 	}
 	

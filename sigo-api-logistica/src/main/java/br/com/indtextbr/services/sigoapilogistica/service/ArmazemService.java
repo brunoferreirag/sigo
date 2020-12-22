@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import br.com.indtextbr.services.sigoapilogistica.model.Armazem;
+import br.com.indtextbr.services.sigoapilogistica.model.integracao.ArmazemIDDTO;
 
 @Service
 public class ArmazemService {
@@ -26,20 +27,17 @@ public class ArmazemService {
 	@Value("${spring.kafka.armazem-edicao.topico}")
 	private String topicoEditarArmazem;
 
-	@Value("${spring.kafka.armazem-inativar.topico}")
+	@Value("${spring.kafka.armazem-exclusao.topico}")
 	private String topicoInativarArmazem;
 
 	@Value("${spring.kafka.armazem-get-all.request.topico}")
 	private String topicoGetAllArmazensRequest;
 
-	@Value("${spring.kafka.armazem-get-all.reply.topico}")
-	private String topicoGetAllArmazensReply;
-
-	@Value("${spring.kafka.armazem-get-all.request.topico}")
+	@Value("${spring.kafka.armazem-get-by-id.request.topico}")
 	private String topicoGetArmazemByIdRequest;
 
-	@Value("${spring.kafka.armazem-get-all.reply.topico}")
-	private String topicoGetArmazemByIdReply;
+	@Value("${spring.kafka.consumer.group-id}")
+	private String grupoKafka;
 
 	private KafkaTemplate<String, String> kafkaTemplate;
 
@@ -71,7 +69,9 @@ public class ArmazemService {
 
 	public Armazem getArmazemById(String id)
 			throws InterruptedException, ExecutionException, JsonMappingException, JsonProcessingException {
-		ProducerRecord<String, String> record = new ProducerRecord<>(this.topicoGetArmazemByIdRequest, null, id, id);
+		ArmazemIDDTO armazemIDDTO = new ArmazemIDDTO();
+		armazemIDDTO.setId(id);
+		ProducerRecord<String, String> record = new ProducerRecord<>(this.topicoGetArmazemByIdRequest, null, id, mapper.writeValueAsString(armazemIDDTO));
 		RequestReplyFuture<String, String, String> future = this.replyingKafkaTemplate.sendAndReceive(record);
 		ConsumerRecord<String, String> response = future.get();
 		String resultado = response.value();
@@ -85,7 +85,7 @@ public class ArmazemService {
 			throws InterruptedException, ExecutionException, JsonMappingException, JsonProcessingException {
 		String uniqueID = UUID.randomUUID().toString();
 		String valueProducerRecord = "";
-		ProducerRecord<String, String> record = new ProducerRecord<>(this.topicoGetArmazemByIdRequest, null, uniqueID,
+		ProducerRecord<String, String> record = new ProducerRecord<>(this.topicoGetAllArmazensRequest, null, uniqueID,
 				valueProducerRecord);
 		RequestReplyFuture<String, String, String> future = this.replyingKafkaTemplate.sendAndReceive(record);
 		ConsumerRecord<String, String> response = future.get();

@@ -1,4 +1,4 @@
-package br.com.indtextbr.services.sigoapilogistica;
+package br.com.indtextbr.services.logistica;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,10 +6,10 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-public class SigoApiLogisticaApplication {
+public class LogisticaApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SigoApiLogisticaApplication.class, args);
+		SpringApplication.run(LogisticaApplication.class, args);
 	}
 
 }

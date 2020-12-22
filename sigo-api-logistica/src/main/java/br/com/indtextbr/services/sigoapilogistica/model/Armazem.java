@@ -17,6 +17,8 @@ public class Armazem {
 	private String id;
 	@NotBlank(message = "Endereço é obrigatório")
 	private String endereco;
+	@NotBlank(message = "Endereço é obrigatório")
+	private String bairro;
 	@NotBlank(message = "Cidade/Estado é obrigatório")
 	private String cidadeEstado;
 	@NotBlank(message = "CEP é obrigatório")
