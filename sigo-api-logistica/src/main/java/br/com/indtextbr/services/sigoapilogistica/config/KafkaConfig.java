@@ -7,6 +7,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.config.TopicConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
@@ -15,21 +16,27 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.listener.BatchLoggingErrorHandler;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
+import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.util.backoff.FixedBackOff;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.HttpServerErrorException.InternalServerError;
 
 import lombok.AccessLevel;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 @EnableKafka
 @Configuration
+@Log4j2
 public class KafkaConfig {
 	@Value("${spring.kafka.consumer.retentativa.numero-maximo}")
 	@Setter(AccessLevel.PROTECTED)
@@ -63,13 +70,15 @@ public class KafkaConfig {
 	
 	@Value("${spring.kafka.consumer.group-id}")
 	private String grupoKafka;
+	
+	
 	@Bean
 	public ConcurrentKafkaListenerContainerFactory kafkaListenerContainerFactory(
 			ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
 			ConsumerFactory<Object, Object> kafkaConsumerFactory, ThreadPoolTaskExecutor executor) {
 		ConcurrentKafkaListenerContainerFactory<Object, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
 		factory.getContainerProperties().setConsumerTaskExecutor(executor);
-		factory.setRetryTemplate(retryTemplate());
+		factory.setBatchErrorHandler(new BatchLoggingErrorHandler());
 		configurer.configure(factory, kafkaConsumerFactory);
 		return factory;
 	}
@@ -86,27 +95,7 @@ public class KafkaConfig {
 		return result;
 	}
 
-	@Bean
-	public RetryTemplate retryTemplate() {
-		RetryTemplate retryTemplate = new RetryTemplate();
-		retryTemplate.setRetryPolicy(getSimpleRetryPolicy());
-		
-		FixedBackOffPolicy fixedBackOfficePolicy = new FixedBackOffPolicy();
-		fixedBackOfficePolicy.setBackOffPeriod(this.intervaloRetentativasEmMilisegundos);
-		retryTemplate.setBackOffPolicy(fixedBackOfficePolicy);
-		return retryTemplate;
-	}
-
-	private SimpleRetryPolicy getSimpleRetryPolicy() {
-		Map<Class<? extends Throwable>, Boolean> exceptionMap = new HashMap<>();
-		exceptionMap.put(InternalServerError.class, true);
-		exceptionMap.put(TimeoutException.class, true);
-		exceptionMap.put(ResourceAccessException.class, true);
-		exceptionMap.put(Exception.class, true);
-
-		return new SimpleRetryPolicy(this.numeroMaximoRetentativa, exceptionMap, true);
-	}
-
+	
 	
 	@Bean
 	public NewTopic topicoIncluirArmazem() {
