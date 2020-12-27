@@ -50,6 +50,8 @@ public class ArmazemService {
 			this.armazemRepository.saveAndFlush(armazem);
 		}
 		
+		throw new Exception();
+		
 	}
 	
 	@KafkaListener(topics = "${spring.kafka.armazem-exclusao.topico}", groupId = "${spring.kafka.consumer.group-id}")

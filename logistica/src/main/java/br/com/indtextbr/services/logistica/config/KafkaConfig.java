@@ -71,7 +71,7 @@ public class KafkaConfig {
 		exceptionMap.put(ResourceAccessException.class, true);
 		exceptionMap.put(Exception.class, true);
 
-		var errorHandler = new SeekToCurrentErrorHandler((record, exception) -> {
+		var errorHandler = new ErrorHandler((record, exception) -> {
 			Object registroComErro = record.value();
 			log.error("Não foi possível processar o registro: " + record.value());
 			log.error(exception);
