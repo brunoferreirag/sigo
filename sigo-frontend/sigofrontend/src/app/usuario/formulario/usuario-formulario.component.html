@@ -1,0 +1,82 @@
+<div class="usuario-wrapper" fxLayout="row" fxLayoutAlign="center center">
+    <mat-card class="box">
+        <mat-card-header>
+            <mat-card-title>Cadastro de Usuário</mat-card-title>
+        </mat-card-header>
+<br/>
+        <form [formGroup]="formUsuario" (ngSubmit)="salvar()" class="example-form">
+            <mat-card-content>
+                <mat-form-field class="example-full-width">
+                    <input matInput placeholder="Username" required formControlName="username">
+                </mat-form-field>
+                <mat-error
+                    *ngIf="formUsuario.controls['username'].invalid && formUsuario.controls['username'].errors.required && (formUsuario.controls['username'].dirty || formUsuario.controls['username'].touched)">
+                    Username é obrigatório
+                </mat-error>
+                <mat-error
+                    *ngIf="formUsuario.controls['username'].invalid && formUsuario.controls['username'].errors.maxlength && (formUsuario.controls['username'].dirty || formUsuario.controls['username'].touched)">
+                    Máximo de 30 caracteres
+                </mat-error>
+
+                <mat-form-field class="example-full-width">
+                    <input matInput placeholder="Senha" type="password" required formControlName="senha">
+                </mat-form-field>
+
+                <mat-error
+                    *ngIf="formUsuario.controls['senha'].invalid && formUsuario.controls['senha'].errors.required && (formUsuario.controls['senha'].dirty || formUsuario.controls['senha'].touched)">
+                    Senha é obrigatória
+                </mat-error>
+
+                <mat-error
+                    *ngIf="formUsuario.controls['senha'].invalid && formUsuario.controls['senha'].errors.minlength && (formUsuario.controls['senha'].dirty || formUsuario.controls['senha'].touched)">
+                    Mínimo de 3 caracteres
+                </mat-error>
+
+                <mat-error
+                    *ngIf="formUsuario.controls['senha'].invalid && formUsuario.controls['senha'].errors.maxlength && (formUsuario.controls['senha'].dirty || formUsuario.controls['senha'].touched)">
+                    Máximo de 20 caracteres
+                </mat-error>
+
+                <mat-form-field class="example-full-width">
+                    <input matInput placeholder="Primeiro Nome" required formControlName="primeiroNome">
+                </mat-form-field>
+                <mat-error
+                    *ngIf="formUsuario.controls['primeiroNome'].invalid && formUsuario.controls['primeiroNome'].errors.required && (formUsuario.controls['primeiroNome'].dirty || formUsuario.controls['primeiroNome'].touched)">
+                    Primeiro Nome é obrigatório
+                </mat-error>
+                <mat-error
+                    *ngIf="formUsuario.controls['primeiroNome'].invalid && formUsuario.controls['primeiroNome'].errors.maxlength && (formUsuario.controls['primeiroNome'].dirty || formUsuario.controls['primeiroNome'].touched)">
+                    Máximo de 50 caracteres
+                </mat-error>
+
+                <mat-form-field class="example-full-width">
+                    <input matInput placeholder="Último Nome" required formControlName="ultimoNome">
+                </mat-form-field>
+                <mat-error
+                    *ngIf="formUsuario.controls['ultimoNome'].invalid && formUsuario.controls['ultimoNome'].errors.required && (formUsuario.controls['ultimoNome'].dirty || formUsuario.controls['ultimoNome'].touched)">
+                    Primeiro Nome é obrigatório
+                </mat-error>
+                <mat-error
+                    *ngIf="formUsuario.controls['ultimoNome'].invalid && formUsuario.controls['ultimoNome'].errors.maxlength && (formUsuario.controls['ultimoNome'].dirty || formUsuario.controls['ultimoNome'].touched)">
+                    Máximo de 50 caracteres
+                </mat-error>
+
+                    <ul>
+                        <li *ngFor="let funcao of funcoes">
+                            <mat-checkbox [ngModelOptions]='{standalone: true}' [(ngModel)]="funcao.escolhida" 
+                                (ngModelChange)="escolherTodasAsFuncoes()">
+                                {{funcao.descricao}}
+                            </mat-checkbox>
+                        </li>
+                    </ul>
+             
+            </mat-card-content>
+            <div class="button-row">
+                <button mat-raised-button color="primary" [disabled]="!formUsuario.valid" type="submit">Salvar</button>
+                <button mat-raised-button color="warn" (click)="cancelar()">Cancelar</button>
+            </div>
+
+        </form>
+    </mat-card>
+
+</div>

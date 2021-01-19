@@ -1,0 +1,45 @@
+<div class="login-wrapper" fxLayout="row" fxLayoutAlign="center center">
+  <mat-card class="box">
+    <mat-card-header>
+      <mat-card-title>Autenticação</mat-card-title>
+    </mat-card-header>
+
+    <form [formGroup]="formLogin" (ngSubmit)="login()" class="example-form">
+      <mat-card-content>
+        <mat-form-field class="example-full-width">
+          <input matInput placeholder="Username" required formControlName="username">
+        </mat-form-field>
+        <mat-error *ngIf="formLogin.controls['username'].invalid && formLogin.controls['username'].errors.required && (formLogin.controls['username'].dirty || formLogin.controls['username'].touched)">
+          Username é obrigatório
+        </mat-error>
+        <mat-error *ngIf="formLogin.controls['username'].invalid && formLogin.controls['username'].errors.maxlength && (formLogin.controls['username'].dirty || formLogin.controls['username'].touched)">
+          Máximo de 30 caracteres
+        </mat-error>
+        
+        <mat-form-field class="example-full-width">
+          <input matInput placeholder="Senha" type="password" required formControlName="senha">
+        </mat-form-field>
+
+        <mat-error *ngIf="formLogin.controls['senha'].invalid && formLogin.controls['senha'].errors.required && (formLogin.controls['senha'].dirty || formLogin.controls['senha'].touched)">
+          Senha é obrigatória
+        </mat-error>
+
+        <mat-error *ngIf="formLogin.controls['senha'].invalid && formLogin.controls['senha'].errors.minlength && (formLogin.controls['senha'].dirty || formLogin.controls['senha'].touched)">
+          Mínimo de 3 caracteres
+        </mat-error>
+
+        <mat-error *ngIf="formLogin.controls['senha'].invalid && formLogin.controls['senha'].errors.maxlength && (formLogin.controls['senha'].dirty || formLogin.controls['senha'].touched)">
+          Máximo de 20 caracteres
+        </mat-error>
+      </mat-card-content>
+      <button mat-stroked-button color="blue" [disabled]="!formLogin.valid" class="btn-block">Log in</button>
+
+      <mat-error *ngIf="loginInvalido">
+        <br />
+        O usuário/senha não foram reconhecidos
+
+      </mat-error>
+    </form>
+  </mat-card>
+
+</div>

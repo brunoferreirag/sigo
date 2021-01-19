@@ -1,10 +1,11 @@
 package br.com.indtextbr.services.sigoapilogistica.controller;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -35,8 +37,9 @@ public class ArmazemController {
 	}
 	
 	@GetMapping(produces = { "application/json" })
-	public ResponseEntity<List<Armazem>> getArmazens() throws JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException {
-		var armazens = this.armazemService.getAllArmazens();
+	public ResponseEntity<Page<Armazem>> getArmazens(@RequestParam(name = "page", defaultValue = "0") int page,@RequestParam(name = "size", defaultValue = "10")int size) throws JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException {
+		PageRequest pageRequest = PageRequest.of(page, size);
+		var armazens = this.armazemService.getAllArmazens(pageRequest);
 		return new ResponseEntity<>(armazens, (armazens.isEmpty()) ? HttpStatus.NOT_FOUND : HttpStatus.OK);
 	}
 	

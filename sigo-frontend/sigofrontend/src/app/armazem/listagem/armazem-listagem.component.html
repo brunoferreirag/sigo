@@ -1,0 +1,57 @@
+<div>
+    <h3>Lista de Armazéms</h3>
+  </div>
+  <div class="button-row" >
+    <button mat-raised-button color="primary" (click)="irParaTelaInclusao()" type="submit">Incluir usuário</button>
+  </div>
+  <table mat-table [dataSource]="armazemDataSource" >
+ 
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef> Id </th>
+      <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="endereco">
+      <th mat-header-cell *matHeaderCellDef> Endereço </th>
+      <td mat-cell *matCellDef="let element"> {{element['endereco']}} </td>
+    </ng-container>
+ 
+    <ng-container matColumnDef="cidade-estado">
+      <th mat-header-cell *matHeaderCellDef> Cidade / Estado </th>
+      <td mat-cell *matCellDef="let element"> {{element['cidade-estado']}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="bairro">
+      <th mat-header-cell *matHeaderCellDef> Bairro </th>
+      <td mat-cell *matCellDef="let element"> {{element['bairro']}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="cep">
+      <th mat-header-cell *matHeaderCellDef> CEP </th>
+      <td mat-cell *matCellDef="let element"> {{element['cep']}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="armazena-items-para-compra">
+      <th mat-header-cell *matHeaderCellDef> Armazena Items para Compra? </th>
+      <td mat-cell *matCellDef="let element"> {{element['armazena-items-para-compra']}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="armazena-items-para-venda">
+      <th mat-header-cell *matHeaderCellDef> Armazena Items para Venda? </th>
+      <td mat-cell *matCellDef="let element"> {{element['armazena-items-para-venda']}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="acao-editar">
+      <th mat-header-cell *matHeaderCellDef>  </th>
+      <td mat-cell *matCellDef="let element"> <button mat-flat-button color="primary" routerLink="/armazem/{{element.id}}" selected>Editar</button></td>
+    </ng-container>
+
+    <ng-container matColumnDef="acao-excluir">
+      <th mat-header-cell *matHeaderCellDef>  </th>
+      <td mat-cell *matCellDef="let element"> <button mat-flat-button color="warn" (click)="excluirArmazem(element.id)" selected>Excluir</button></td>
+    </ng-container>
+ 
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+  <mat-paginator [pageSizeOptions]="[10, 25, 100]" [pageSize]="10"></mat-paginator>

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Service;
@@ -35,7 +37,7 @@ public class ArmazemService {
 		ArmazemDTO armazemDTO = this.mapper.readValue(payload, ArmazemDTO.class);
 		Armazem armazem = new Armazem();
 		preencherArmazemEntityDeUmArmazemDTO(armazemDTO,armazem);
-		this.armazemRepository.saveAndFlush(armazem);
+		this.armazemRepository.save(armazem);
 	}
 	
 	@KafkaListener(topics = "${spring.kafka.armazem-edicao.topico}", groupId = "${spring.kafka.consumer.group-id}")
@@ -47,7 +49,7 @@ public class ArmazemService {
 		if(armazemOptional.isPresent()) {
 			Armazem armazem = armazemOptional.get();
 			preencherArmazemEntityDeUmArmazemDTO(armazemDTO, armazem);
-			this.armazemRepository.saveAndFlush(armazem);
+			this.armazemRepository.save(armazem);
 		}
 		
 		throw new Exception();
@@ -61,14 +63,17 @@ public class ArmazemService {
 		if(armazemOptional.isPresent()) {
 			Armazem armazem = armazemOptional.get();
 			armazem.setStatus(Constants.STATUS_INATIVO);
-			this.armazemRepository.saveAndFlush(armazem);
+			this.armazemRepository.save(armazem);
 		}
 	}
 	
 	@KafkaListener(topics = "${spring.kafka.armazem-get-all.request.topico}", groupId = "${spring.kafka.consumer.group-id}")
 	@SendTo
-	public String getAllArmazens() throws JsonProcessingException{
-		var armazensEntity = this.armazemRepository.findAllByStatus(Constants.STATUS_ATIVO);
+	public String getAllArmazens(String pageRequestString) throws JsonProcessingException{
+		
+		PageRequest pageRequest = mapper.readValue(pageRequestString, PageRequest.class);
+		
+		var armazensEntity = this.armazemRepository.findAllByStatus(Constants.STATUS_ATIVO, pageRequest);
 		
 		List<ArmazemDTO> armazens = new ArrayList<>();
 		
@@ -77,7 +82,7 @@ public class ArmazemService {
 			armazens.add(dto);
 		});
 		
-		return this.mapper.writeValueAsString(armazens);
+		return this.mapper.writeValueAsString(new PageImpl<>(armazens, pageRequest, armazensEntity.getTotalElements()));
 	}
 	
 	@KafkaListener(topics = "${spring.kafka.armazem-get-by-id.request.topico}", groupId = "${spring.kafka.consumer.group-id}")

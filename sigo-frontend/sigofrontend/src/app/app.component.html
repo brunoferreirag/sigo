@@ -1,0 +1,50 @@
+<mat-toolbar color="primary" class="expanded-toolbar">
+  <span>
+    <button mat-button routerLink="/">{{title}}</button>
+  </span>
+
+<div fxLayout="row" fxShow="false" fxShow.gt-sm>
+  <button mat-button routerLink="/login" *ngIf="!estaLogado">
+    <mat-icon>power_settings_new</mat-icon>
+    Login
+  </button>
+  <button mat-button *ngIf="estaLogado" (click)="logout()">
+    <mat-icon>exit_to_app</mat-icon>
+    Logout
+  </button>
+  <button mat-button routerLink="/usuarios" *ngIf="estaLogado">
+    <mat-icon>people</mat-icon>
+    Usuários
+  </button>
+
+  <button mat-button routerLink="/normas-industriais" *ngIf="estaLogado">
+    <mat-icon>folder</mat-icon>
+    Gestão de Normas
+  </button>
+
+  <button *ngIf="estaLogado" mat-button [mat-menu-trigger-for]="menu" >
+    <mat-icon>menu</mat-icon>
+    Gestão de Processo Industrial
+  </button>
+</div>
+
+</mat-toolbar>
+
+<mat-menu x-position="before" #menu="matMenu">
+  <button mat-menu-item routerLink="/armazens">
+    <mat-icon>home</mat-icon>
+   Armazéns
+  </button>
+  <button mat-menu-item routerLink="/game">
+    <mat-icon>gamepad</mat-icon>
+    Cadastro de Setor Industrial
+  </button>
+ 
+</mat-menu>
+<mat-spinner style="margin:0 auto;" 
+mode="indeterminate" [diameter]="50" *ngIf="spinnerService.visibility | async"></mat-spinner>
+<app-alerta></app-alerta>
+<router-outlet></router-outlet>
+
+
+  

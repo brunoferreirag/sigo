@@ -3,14 +3,15 @@ package br.com.indtextbr.services.logistica.repository;
 import org.springframework.stereotype.Repository;
 import br.com.indtextbr.services.logistica.entity.Armazem;
 
-import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 @Repository
-public interface ArmazemRepository extends JpaRepository<Armazem, String> {
+public interface ArmazemRepository extends PagingAndSortingRepository<Armazem, String> {
 
-	List<Armazem> findAllByStatus(String statusAtivo);
+	Page<Armazem> findAllByStatus(String statusAtivo,Pageable pageable);
 
 	Armazem findByIdAndStatus(String id, String statusAtivo);
 
