@@ -38,9 +38,9 @@ public class ArmazemController {
 	
 	@GetMapping(produces = { "application/json" })
 	public ResponseEntity<Page<Armazem>> getArmazens(@RequestParam(name = "page", defaultValue = "0") int page,@RequestParam(name = "size", defaultValue = "10")int size) throws JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException {
-		PageRequest pageRequest = PageRequest.of(page, size);
-		var armazens = this.armazemService.getAllArmazens(pageRequest);
-		return new ResponseEntity<>(armazens, (armazens.isEmpty()) ? HttpStatus.NOT_FOUND : HttpStatus.OK);
+		return null;
+		//var armazens = this.armazemService.getAllArmazens(size,page);
+		//return new ResponseEntity<>(armazens, (armazens.isEmpty()) ? HttpStatus.NOT_FOUND : HttpStatus.OK);
 	}
 	
 	@GetMapping(value="/{id}", produces = { "application/json" })

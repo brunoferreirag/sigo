@@ -1,5 +1,6 @@
 package br.com.indtextbr.services.logistica.dto;
 
+import br.com.indtextbr.services.logistica.common.EnumAcaoEscritaDB;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArmazemIDDTO {
-	private String id;
+public class InsertUpdateDeleteRequestDTO {
+	private EnumAcaoEscritaDB acao;
+	private ArmazemDTO armazem;
+
 }

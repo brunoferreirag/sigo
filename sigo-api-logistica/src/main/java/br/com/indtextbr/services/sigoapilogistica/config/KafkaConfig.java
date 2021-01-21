@@ -1,13 +1,8 @@
 package br.com.indtextbr.services.sigoapilogistica.config;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
-
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.config.TopicConfig;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
@@ -16,19 +11,11 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.BatchLoggingErrorHandler;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
-import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
-import org.springframework.retry.backoff.FixedBackOffPolicy;
-import org.springframework.retry.policy.SimpleRetryPolicy;
-import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.util.backoff.FixedBackOff;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.HttpServerErrorException.InternalServerError;
 
 import lombok.AccessLevel;
 import lombok.Setter;
@@ -50,23 +37,16 @@ public class KafkaConfig {
 	@Setter(AccessLevel.PROTECTED)
 	private String tempoExpiracaoMensagemTopicoEmMilesegundos;
 	
-	@Value("${spring.kafka.armazem-inclusao.topico}")
-	private String topicoIncluirArmazem;
+	@Value("${spring.kafka.armazem-insert-update-delete.topico}")
+	private String topicoIncluirEditarDeletarArmazem;
 	
-	@Value("${spring.kafka.armazem-edicao.topico}")
-	private String topicoEditarArmazem;
-
-	@Value("${spring.kafka.armazem-exclusao.topico}")
-	private String topicoInativarArmazem;
-
-	@Value("${spring.kafka.armazem-get-all.request.topico}")
-	private String topicoGetAllArmazensRequest;
+	@Value("${spring.kafka.armazem-read.topico}")
+	private String topicoLerArmazem;
+	
 
 	@Value("${spring.kafka.reply.topico}")
 	private String topicoReply;
 
-	@Value("${spring.kafka.armazem-get-by-id.request.topico}")
-	private String topicoGetArmazemByIdRequest;
 	
 	@Value("${spring.kafka.consumer.group-id}")
 	private String grupoKafka;
@@ -91,32 +71,25 @@ public class KafkaConfig {
 		replyContainer.getContainerProperties().setGroupId(this.grupoKafka);
 		var result = new ReplyingKafkaTemplate<>(pf, replyContainer);
 		result.setSharedReplyTopic(true);
-		result.setDefaultReplyTimeout(Duration.ofMillis(20000));
+		result.setDefaultReplyTimeout(Duration.ofMillis(40000));
 		return result;
 	}
 
 	
 	
 	@Bean
-	public NewTopic topicoIncluirArmazem() {
-	    return TopicBuilder.name(this.topicoIncluirArmazem)
+	public NewTopic topicoIncluirEditarDeletarArmazem() {
+	    return TopicBuilder.name(this.topicoIncluirEditarDeletarArmazem)
 	            .partitions(1)
 	            .replicas(1)
 	            .config(TopicConfig.RETENTION_MS_CONFIG, this.tempoExpiracaoMensagemTopicoEmMilesegundos)
 	            .build();
 	}
 	
-	@Bean
-	public NewTopic topicoInativarArmazem() {
-	    return TopicBuilder.name(this.topicoInativarArmazem)
-	            .partitions(1)
-	            .replicas(1)
-	            .config(TopicConfig.RETENTION_MS_CONFIG, this.tempoExpiracaoMensagemTopicoEmMilesegundos)
-	            .build();
-	}
+
 	
 	@Bean
-	public NewTopic topicoGetAllArmazensReply() {
+	public NewTopic topicoReply() {
 	    return TopicBuilder.name(this.topicoReply)
 	            .partitions(1)
 	            .replicas(1)
@@ -125,31 +98,11 @@ public class KafkaConfig {
 	}
 	
 	@Bean
-	public NewTopic topicoGetAllArmazensRequest() {
-	    return TopicBuilder.name(this.topicoGetAllArmazensRequest)
+	public NewTopic topicoLerArmazensRequest() {
+	    return TopicBuilder.name(this.topicoLerArmazem)
 	            .partitions(1)
 	            .replicas(1)
 	            .config(TopicConfig.RETENTION_MS_CONFIG, this.tempoExpiracaoMensagemTopicoEmMilesegundos)
 	            .build();
 	}
-	
-	@Bean
-	public NewTopic topicoGetArmazemByIdRequest() {
-	    return TopicBuilder.name(this.topicoGetArmazemByIdRequest)
-	            .partitions(1)
-	            .replicas(1)
-	            .config(TopicConfig.RETENTION_MS_CONFIG, this.tempoExpiracaoMensagemTopicoEmMilesegundos)
-	            .build();
-	}
-	
-	@Bean
-	public NewTopic topicoEditarArmazem() {
-	    return TopicBuilder.name(this.topicoEditarArmazem)
-	            .partitions(1)
-	            .replicas(1)
-	            .config(TopicConfig.RETENTION_MS_CONFIG, this.tempoExpiracaoMensagemTopicoEmMilesegundos)
-	            .build();
-	}
-
-
 }

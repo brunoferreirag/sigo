@@ -13,31 +13,26 @@ import org.springframework.kafka.requestreply.RequestReplyFuture;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import br.com.indtextbr.services.sigoapilogistica.common.EnumAcaoEscritaDB;
 import br.com.indtextbr.services.sigoapilogistica.model.Armazem;
-import br.com.indtextbr.services.sigoapilogistica.model.integracao.ArmazemIDDTO;
+import br.com.indtextbr.services.sigoapilogistica.model.GetArmazensRequestDTO;
+import br.com.indtextbr.services.sigoapilogistica.model.GetArmazensResponseDTO;
+import br.com.indtextbr.services.sigoapilogistica.model.InsertUpdateDeleteRequestDTO;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 @Service
 public class ArmazemService {
 
-	@Value("${spring.kafka.armazem-inclusao.topico}")
-	private String topicoIncluirArmazem;
+	@Value("${spring.kafka.armazem-insert-update-delete.topico}")
+	private String topicoIncluirEditarDeletarArmazem;
 	
-	@Value("${spring.kafka.armazem-edicao.topico}")
-	private String topicoEditarArmazem;
-
-	@Value("${spring.kafka.armazem-exclusao.topico}")
-	private String topicoInativarArmazem;
-
-	@Value("${spring.kafka.armazem-get-all.request.topico}")
-	private String topicoGetAllArmazensRequest;
-
-	@Value("${spring.kafka.armazem-get-by-id.request.topico}")
-	private String topicoGetArmazemByIdRequest;
+	@Value("${spring.kafka.armazem-read.topico}")
+	private String topicoLerArmazem;
 
 	@Value("${spring.kafka.consumer.group-id}")
 	private String grupoKafka;
@@ -56,25 +51,37 @@ public class ArmazemService {
 	}
 
 	public void incluirArmazem(Armazem armazem) throws JsonProcessingException {
-		String payload = this.mapper.writeValueAsString(armazem);
-		this.kafkaTemplate.send(this.topicoIncluirArmazem, payload);
+		InsertUpdateDeleteRequestDTO dto = new InsertUpdateDeleteRequestDTO();
+		dto.setArmazem(armazem);
+		dto.setAcao(EnumAcaoEscritaDB.INSERT);
+		String payload = this.mapper.writeValueAsString(dto);
+		this.kafkaTemplate.send(this.topicoIncluirEditarDeletarArmazem, payload);
 	}
 	
 	public void editarArmazem(Armazem armazem) throws JsonProcessingException {
-		String payload = this.mapper.writeValueAsString(armazem);
-		this.kafkaTemplate.send(this.topicoEditarArmazem, payload);
+		InsertUpdateDeleteRequestDTO dto = new InsertUpdateDeleteRequestDTO();
+		dto.setArmazem(armazem);
+		dto.setAcao(EnumAcaoEscritaDB.UPDATE);
+		String payload = this.mapper.writeValueAsString(dto);
+		this.kafkaTemplate.send(this.topicoIncluirEditarDeletarArmazem, payload);
 	}
 	
 	public void inativarArmazem(String id) throws JsonProcessingException {
+		InsertUpdateDeleteRequestDTO dto = new InsertUpdateDeleteRequestDTO();
+		Armazem armazemDTO = new Armazem();
+		armazemDTO.setId(id);
+		dto.setArmazem(armazemDTO);
+		dto.setAcao(EnumAcaoEscritaDB.DELETE);
+		
 		String payload = this.mapper.writeValueAsString(id);
-		this.kafkaTemplate.send(this.topicoInativarArmazem, payload);
+		this.kafkaTemplate.send(this.topicoIncluirEditarDeletarArmazem, payload);
 	}
 
 	public Armazem getArmazemById(String id)
 			throws InterruptedException, ExecutionException, JsonMappingException, JsonProcessingException {
-		ArmazemIDDTO armazemIDDTO = new ArmazemIDDTO();
-		armazemIDDTO.setId(id);
-		ProducerRecord<String, String> record = new ProducerRecord<>(this.topicoGetArmazemByIdRequest, null, id, mapper.writeValueAsString(armazemIDDTO));
+		GetArmazensRequestDTO dto = new GetArmazensRequestDTO();
+		dto.setCodigoArmazem(id);
+		ProducerRecord<String, String> record = new ProducerRecord<>(this.topicoLerArmazem, null, id, mapper.writeValueAsString(dto));
 		RequestReplyFuture<String, String, String> future = this.replyingKafkaTemplate.sendAndReceive(record);
 		ConsumerRecord<String, String> response = future.get();
 		String resultado = response.value();
@@ -84,18 +91,22 @@ public class ArmazemService {
 		return null;
 	}
 
-	public Page<Armazem> getAllArmazens(PageRequest page)
+	public Page<Armazem> getAllArmazens(int size , int page)
 			throws InterruptedException, ExecutionException, JsonMappingException, JsonProcessingException {
 		String uniqueID = UUID.randomUUID().toString();
-		String valueProducerRecord = mapper.writeValueAsString(page);
-		ProducerRecord<String, String> record = new ProducerRecord<>(this.topicoGetAllArmazensRequest, null, uniqueID,
+		GetArmazensRequestDTO dto = new GetArmazensRequestDTO();
+		dto.setPage(page);
+		dto.setSize(size);
+		String valueProducerRecord = mapper.writeValueAsString(dto);
+		ProducerRecord<String, String> record = new ProducerRecord<>(this.topicoLerArmazem, null, uniqueID,
 				valueProducerRecord);
 		RequestReplyFuture<String, String, String> future = this.replyingKafkaTemplate.sendAndReceive(record);
 		ConsumerRecord<String, String> response = future.get();
 		String resultado = response.value();
 		if (resultado != null) {
-			JavaType type = mapper.getTypeFactory().constructParametricType(Page.class, Armazem.class);
-			return this.mapper.readValue(resultado,type);
+			var pageRequest = PageRequest.of(page, size);
+			var resultadoConvertido =this.mapper.readValue(resultado,GetArmazensResponseDTO.class);
+			return new PageImpl<>(resultadoConvertido.getArmazens(), pageRequest, resultadoConvertido.getTotal());
 		}
 		return null;
 	}

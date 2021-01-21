@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -15,88 +14,112 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.com.indtextbr.services.logistica.common.Constants;
 import br.com.indtextbr.services.logistica.dto.ArmazemDTO;
-import br.com.indtextbr.services.logistica.dto.ArmazemIDDTO;
+import br.com.indtextbr.services.logistica.dto.GetArmazensRequestDTO;
+import br.com.indtextbr.services.logistica.dto.GetArmazensResponseDTO;
+import br.com.indtextbr.services.logistica.dto.InsertUpdateDeleteRequestDTO;
 import br.com.indtextbr.services.logistica.entity.Armazem;
 import br.com.indtextbr.services.logistica.repository.ArmazemRepository;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.web.client.HttpServerErrorException.InternalServerError;
 
 @Service
 public class ArmazemService {
-	
+
 	private ObjectMapper mapper;
 	private ArmazemRepository armazemRepository;
-	
+
 	public ArmazemService(ObjectMapper mapper, ArmazemRepository armazemRepository) {
 		this.mapper = mapper;
 		this.armazemRepository = armazemRepository;
 	}
-	
-	@KafkaListener(topics = "${spring.kafka.armazem-inclusao.topico}", groupId = "${spring.kafka.consumer.group-id}")
-	public void incluirArmazem(String payload) throws Exception {
-		ArmazemDTO armazemDTO = this.mapper.readValue(payload, ArmazemDTO.class);
+
+	@KafkaListener(topics = "${spring.kafka.armazem-insert-update-delete.topico}", groupId = "${spring.kafka.consumer.group-id}")
+	public void escreverArmazemNaBase(String payload) throws Exception {
+		InsertUpdateDeleteRequestDTO dto = this.mapper.readValue(payload, InsertUpdateDeleteRequestDTO.class);
+		switch (dto.getAcao()) {
+		case INSERT: {
+			this.incluirArmazem(dto.getArmazem());
+		}
+		case UPDATE: {
+			this.editarArmazem(dto.getArmazem());
+		}
+		default: {
+			this.inativarArmazem(dto.getArmazem().getId());
+		}
+		}
+
+	}
+
+	private void incluirArmazem(ArmazemDTO armazemDTO) throws Exception {
 		Armazem armazem = new Armazem();
-		preencherArmazemEntityDeUmArmazemDTO(armazemDTO,armazem);
+		preencherArmazemEntityDeUmArmazemDTO(armazemDTO, armazem);
 		this.armazemRepository.save(armazem);
 	}
-	
-	@KafkaListener(topics = "${spring.kafka.armazem-edicao.topico}", groupId = "${spring.kafka.consumer.group-id}")
-	public void editarArmazem(String payload) throws Exception {
-		
-		ArmazemDTO armazemDTO = this.mapper.readValue(payload, ArmazemDTO.class);
+
+	public void editarArmazem(ArmazemDTO armazemDTO) throws Exception {
+
 		Optional<Armazem> armazemOptional = this.armazemRepository.findById(armazemDTO.getId());
-		
-		if(armazemOptional.isPresent()) {
+
+		if (armazemOptional.isPresent()) {
 			Armazem armazem = armazemOptional.get();
 			preencherArmazemEntityDeUmArmazemDTO(armazemDTO, armazem);
 			this.armazemRepository.save(armazem);
 		}
-		
+
 		throw new Exception();
-		
+
 	}
-	
-	@KafkaListener(topics = "${spring.kafka.armazem-exclusao.topico}", groupId = "${spring.kafka.consumer.group-id}")
-	public void inativarArmazem(String payload) throws JsonProcessingException {
-		ArmazemIDDTO armazemIDDTO = this.mapper.readValue(payload, ArmazemIDDTO.class);
-		Optional<Armazem> armazemOptional = this.armazemRepository.findById(armazemIDDTO.getId());
-		if(armazemOptional.isPresent()) {
+
+	public void inativarArmazem(String codigo) throws JsonProcessingException {
+		Optional<Armazem> armazemOptional = this.armazemRepository.findById(codigo);
+		if (armazemOptional.isPresent()) {
 			Armazem armazem = armazemOptional.get();
 			armazem.setStatus(Constants.STATUS_INATIVO);
 			this.armazemRepository.save(armazem);
 		}
 	}
-	
-	@KafkaListener(topics = "${spring.kafka.armazem-get-all.request.topico}", groupId = "${spring.kafka.consumer.group-id}")
+
+	@KafkaListener(topics = "${spring.kafka.armazem-read.topico}", groupId = "${spring.kafka.consumer.group-id}")
 	@SendTo
-	public String getAllArmazens(String pageRequestString) throws JsonProcessingException{
-		
-		PageRequest pageRequest = mapper.readValue(pageRequestString, PageRequest.class);
-		
-		var armazensEntity = this.armazemRepository.findAllByStatus(Constants.STATUS_ATIVO, pageRequest);
-		
-		List<ArmazemDTO> armazens = new ArrayList<>();
-		
-		armazensEntity.forEach(armazem ->{
-			ArmazemDTO dto = criarArmazemDTODeUmArmazemEntity(armazem);
-			armazens.add(dto);
-		});
-		
-		return this.mapper.writeValueAsString(new PageImpl<>(armazens, pageRequest, armazensEntity.getTotalElements()));
+	public String lerArmazens(String payload) throws JsonProcessingException {
+		GetArmazensRequestDTO dto= mapper.readValue(payload, GetArmazensRequestDTO.class);
+		if(dto.getCodigoArmazem() ==null) {
+			return this.getAllArmazens(dto);
+		}
+		return this.getById(dto);
 	}
 	
-	@KafkaListener(topics = "${spring.kafka.armazem-get-by-id.request.topico}", groupId = "${spring.kafka.consumer.group-id}")
-	@SendTo
-	public String getById(String payload) throws JsonProcessingException{
-		var armazemIdDto = this.mapper.readValue(payload,  ArmazemIDDTO.class);
-		var armazemEntity = this.armazemRepository.findByIdAndStatus(armazemIdDto.getId(),Constants.STATUS_ATIVO);
-		if(armazemEntity !=null) {
-			return this.mapper.writeValueAsString(criarArmazemDTODeUmArmazemEntity(armazemEntity));
-		}
-		
-		return null;
+	public String getAllArmazens(GetArmazensRequestDTO dto) throws JsonProcessingException {
+
+		PageRequest page = PageRequest.of(dto.getPage(), dto.getSize());
+
+		var armazensEntity = this.armazemRepository.findAllByStatus(Constants.STATUS_ATIVO, page);
+
+		List<ArmazemDTO> armazens = new ArrayList<>();
+
+		armazensEntity.forEach(armazem -> {
+			ArmazemDTO armazemDTO = criarArmazemDTODeUmArmazemEntity(armazem);
+			armazens.add(armazemDTO);
+		});
+
+		var resposta = new GetArmazensResponseDTO();
+		resposta.setArmazens(armazens);
+		resposta.setTotal(armazensEntity.getTotalElements());
+
+		return this.mapper.writeValueAsString(resposta);
 	}
 
+	public String getById(GetArmazensRequestDTO dto) throws JsonProcessingException {
+		var armazemEntity = this.armazemRepository.findByIdAndStatus(dto.getCodigoArmazem(), Constants.STATUS_ATIVO);
+		if (armazemEntity != null) {
+			var armazemDTO = criarArmazemDTODeUmArmazemEntity(armazemEntity);
+			List<ArmazemDTO> armazens = new ArrayList<>();
+			armazens.add(armazemDTO);
+			var resposta = new GetArmazensResponseDTO();
+			resposta.setArmazens(armazens);
+			resposta.setTotal((long)armazens.size());
+			this.mapper.writeValueAsString(resposta);
+		}
+		return null;
+	}
 
 	private ArmazemDTO criarArmazemDTODeUmArmazemEntity(Armazem armazem) {
 		ArmazemDTO dto = new ArmazemDTO();
@@ -110,7 +133,6 @@ public class ArmazemService {
 		dto.setStatus(armazem.getStatus());
 		return dto;
 	}
-	
 
 	private void preencherArmazemEntityDeUmArmazemDTO(ArmazemDTO armazemDTO, Armazem armazem) {
 		armazem.setArmazenaItemsParaCompra(armazemDTO.getArmazenaItemsParaCompra());
@@ -122,6 +144,5 @@ public class ArmazemService {
 		armazem.setStatus(armazemDTO.getStatus());
 		armazem.setBairro(armazemDTO.getBairro());
 	}
-	
 
 }
